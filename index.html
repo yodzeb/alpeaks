@@ -104,7 +104,7 @@
         .custom-region-selector {
             text-align: center;
             margin-top: 30px;
-            height: 80%;
+            height: 100%;
         }
 
         .custom-region-selector h3 {
@@ -133,7 +133,7 @@
 
         .game-area {
             display: none;
-            height: 90%;
+            height: 95%;
         }
 
         .game-header {
@@ -147,9 +147,11 @@
         }
 
         .score-board {
-            display: flex;
-            gap: 30px;
-            align-items: center;
+        display: flex;
+        //flex-direction: row;
+        gap: 30px;
+        align-items: center;
+        justify-content: space-evenly;
         }
 
         .score-item {
@@ -238,8 +240,8 @@
         }
 
         .feedback {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 10px;
+            padding: 10px;
             border-radius: 10px;
             text-align: center;
             font-size: 1.1em;
@@ -295,16 +297,16 @@
 
         @media (max-width: 768px) {
             .game-header {
-                flex-direction: column;
+                flex-direction: row;
                 gap: 10px;
             }
             
             .score-board {
-                justify-content: center;
+                justify-content: space-evenly;
             }
             
             .map-container {
-                height: 400px;
+                height: 90%;
             }
         }
     </style>
@@ -313,7 +315,7 @@
     <div class="game-container">
         <div class="header" id="header">
             <h1>🏔️ AlPeaks 🏔️</h1>
-            <p>Test your knowledge of Alpine peaks!</p>
+            <p>Know your Alps!</p>
         </div>
 
         <div class="game-content">
@@ -325,7 +327,7 @@
             </div>
                 <div id="custom-region-selector" class="custom-region-selector" style="display: none;">
                     <h3>Select Custom Region</h3>
-                    <p>Click and drag on the map to select your region</p>
+                    <p>Click two corners for your zone !</p>
                     <div class="custom-map-container">
                         <div id="custom-map"></div>
                     </div>
@@ -343,33 +345,35 @@
 
             <div id="game-area" class="game-area">
                 <div class="game-header">
-                    <div class="score-board">
-                        <div class="score-item">
-                            <div class="score-value" id="current-question">1</div>
-                            <div class="score-label">Question</div>
-                        </div>
-                        <div class="score-item">
-                            <div class="score-value" id="score">0</div>
-                            <div class="score-label">Score</div>
-                        </div>
-                        <div class="score-item">
-                            <div class="score-value" id="streak">0</div>
-                            <div class="score-label">Streak</div>
-                        </div>
-                    </div>
                     <div class="current-peak">
                       <div class="peak-name" id="peak-name">Peak Name</div>
                       <div class="peak-info" id="peak-info">Elevation: 0m | Prominence: 0m</div>
                     </div>
                     <div class="game-controls">
-                        <button class="btn" id="validate-guess" disabled>Submit</button>
-                        <!-- <button class="btn" id="skip-question">Skip</button> -->
-                        <button class="btn btn-danger" id="quit-game">Quit</button>
+                      <button class="btn btn-danger" id="quit-game">Quit</button>
+                      <button class="btn" id="validate-guess" disabled>Submit</button>
+                      <!-- <button class="btn" id="skip-question">Skip</button> -->
+                                              
                     </div>
                 </div>
 
                 <div class="map-container">
                     <div id="map"></div>
+                </div>
+
+                <div class="score-board" id="sb">
+                  <div class="score-item">
+                    <div class="score-value" id="current-question">1</div>
+                    <div class="score-label">Question</div>
+                  </div>
+                  <div class="score-item">
+                    <div class="score-value" id="score">0</div>
+                    <div class="score-label">Score</div>
+                  </div>
+                  <div class="score-item">
+                    <div class="score-value" id="streak">0</div>
+                    <div class="score-label">Streak</div>
+                  </div>
                 </div>
 
                 <div id="feedback" class="feedback" style="display: none;"></div>
@@ -390,6 +394,7 @@
                 this.currentPeakIndex = 0;
                 this.score = 0;
                 this.streak = 0;
+                this.max_streak = 0;
                 this.map = null;
                 this.userGuess = null;
                 this.guessMarker = null;
@@ -409,7 +414,7 @@
                         description: "Isère & Savoie<br>Limestone peaks near Grenoble<br>Chamechaude (2,082m)"
                     },
                     belledonne: { 
-                        bounds: [[45.1, 5.9], [45.5, 6.2]], 
+                        bounds: [[45.1, 5.9], [45.54, 6.3]], 
                         name: "Belledonne",
                         icon: "⛰️",
                         description: "Isère & Savoie<br>Crystalline massif east of Grenoble<br>Grand Pic de Belledonne (2,977m)"
@@ -421,7 +426,7 @@
                         description: "Hautes-Alpes & Isère<br>Highest peaks of Dauphiné Alps<br>Barre des Écrins (4,102m)"
                     },
                     vanoise: { 
-                        bounds: [[45.2, 6.6], [45.55, 7.2]], 
+                        bounds: [[45.2, 6.4], [45.55, 7.15]], 
                         name: "Vanoise",
                         icon: "🦎",
                         description: "Savoie<br>First French National Park<br>Grande Casse (3,855m)"
@@ -433,7 +438,7 @@
                         description: "Isère & Drôme<br>Limestone plateau south of Grenoble<br>Grand Veymont (2,341m)"
                     },
                     aravis: { 
-                        bounds: [[45.8, 6.4], [46.0, 6.7]], 
+                        bounds: [[45.76, 6.35], [46.05, 6.61]], 
                         name: "Aravis",
                         icon: "🎿",
                         description: "Haute-Savoie<br>Between Annecy and Chamonix<br>Pointe Percée (2,750m)"
@@ -455,7 +460,21 @@
                         name: "Beaufortain",
                         icon: "🧀",
                         description: "Savoie<br>Cheese country near Beaufort<br>Roignais (2,995m)"
-                    }
+                    },
+                    vosges: {
+                        bounds: [[47.73,6.5],[48.74,7.43]],
+                        name: "Vosges",
+                        icon: "🌲",
+                        description: "Vosges<br>It's not flatland !<br>Grand Balon (1,423m)"
+                    },
+                    /*
+                    auvergne: {
+                        bounds: [[44.83,2.36],[46.03,3.38]],
+                        name: "Auvergne",
+                        icon: "🌋",
+                        description: "Auvergne<br>Hot region!<br>Puy de Sancy (1,886m)"
+                        }
+                        */
                 };
                 
                 this.init();
@@ -567,6 +586,7 @@
                 this.currentRegion = region;
                 this.score = 0;
                 this.streak = 0;
+                this.max_streak = 0;
                 this.currentPeakIndex = 0;
                 
                 document.getElementById('region-selection').style.display = 'none';
@@ -702,6 +722,7 @@
                 this.userGuess = null;
                 document.getElementById('validate-guess').disabled = true;
                 document.getElementById('feedback').style.display = 'none';
+                document.getElementById('sb').style.display = 'flex';
             }
 
             validateGuess() {
@@ -732,13 +753,15 @@
                 let points = 0;
                 let isCorrect = false;
 
-                points = Math.max(0, Math.round(100-distance));
+                points = Math.max(0, Math.round(100-(3*distance)));
                 isCorrect = points > 90;
                 
                 this.score += points;
                 
                 if (isCorrect) {
                     this.streak++;
+                    if (this.streak > this.max_streak)
+                        this.max_streak = this.streak;
                 } else {
                     this.streak = 0;
                 }
@@ -749,7 +772,7 @@
                 setTimeout(() => {
                     this.currentPeakIndex++;
                     this.loadNextPeak();
-                }, 3000);
+                }, 2000);
             }
 
             skipQuestion() {
@@ -780,18 +803,18 @@
 
             showFeedback(isCorrect, distance, points, skipped = false) {
                 const feedback = document.getElementById('feedback');
-                
+
                 if (skipped) {
                     feedback.textContent = 'Question skipped! The peak location is shown in green.';
                     feedback.className = 'feedback incorrect';
                 } else if (isCorrect) {
-                    feedback.textContent = `Excellent! You were ${distance.toFixed(1)}km away and earned ${points} points!`;
+                    feedback.textContent = `Excellent! You were ${distance.toFixed(1)}km and earned away  ${points} points!`;
                     feedback.className = 'feedback correct';
                 } else {
                     feedback.textContent = `Not quite right. You were ${distance.toFixed(1)}km away and earned ${points} points.`;
                     feedback.className = 'feedback incorrect';
                 }
-                
+                document.getElementById('sb').style.display = 'none';                
                 feedback.style.display = 'block';
             }
 
@@ -816,8 +839,8 @@
                     <div class="game-complete">
                         <h2>🎉 Game Complete!</h2>
                         <div class="final-score">${this.score}</div>
-                        <p>Final Score</p>
-                        <p>You completed all 10 peaks in the ${this.regions[this.currentRegion].name} massif!</p>
+                        <div class="final-score">${this.score}</div>
+                        <p>Max streak : ${this.max_streak}</p>
                         <button class="btn" onclick="location.reload()">Play Again</button>
                     </div>
                 `;
@@ -922,20 +945,45 @@
               //   });
             }
 
-            updateCustomRectangle() {
-                if (this.customRectangle) {
-                    this.customMap.removeLayer(this.customRectangle);
-                }
-                
-                if (this.customSelectionStart && this.customSelectionEnd) {
-                    const bounds = L.latLngBounds(this.customSelectionStart, this.customSelectionEnd);
-                    this.customRectangle = L.rectangle(bounds, {
-                        color: '#3498db',
-                        weight: 2,
-                        fillOpacity: 0.2
-                    }).addTo(this.customMap);
-                }
-            }
+          updateCustomRectangle() {
+              
+              if (this.customRectangle) {
+                  this.customMap.removeLayer(this.customRectangle);
+              }
+              
+              if (this.customSelectionStart && !this.customSelectionEnd) {
+                  console.log("doing marker");
+                  if (this.customStartpoint) {
+                      this.map.removeLayer(customStartpoint);
+                  }
+                  console.log(this.customSelectionStart);
+                  this.customStartpoint = L.marker(this.customSelectionStart, {
+                      icon: L.icon({
+                          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                          iconSize: [25, 41],
+                          iconAnchor: [12, 41],
+                          popupAnchor: [1, -34],
+                          shadowSize: [41, 41]
+                      })
+                  }).addTo(this.customMap);
+              }
+              else {
+                  if (this.customStartpoint) {
+                      this.customMap.removeLayer(this.customStartpoint);
+                  }
+                  this.customStartpoint = null;
+              }
+              
+              if (this.customSelectionStart && this.customSelectionEnd) {
+                  const bounds = L.latLngBounds(this.customSelectionStart, this.customSelectionEnd);
+                  this.customRectangle = L.rectangle(bounds, {
+                      color: '#3498db',
+                      weight: 2,
+                      fillOpacity: 0.2
+                  }).addTo(this.customMap);
+              }
+          }
 
           submitCustomRegion() {
               if (this.customSelectionStart && this.customSelectionEnd) {
@@ -972,18 +1020,18 @@
 
             generateRegionButtons() {
                 let buttonsHTML = '';
-                buttonsHTML += `
-                    <div class="region-card" data-region="custom">
-                        <h3>📍 Custom Region</h3>
-                        <p>Select your own area<br>Draw a rectangle on the map<br>Choose any Alps region</p>
-                    </div>
-                `;
 
                 Object.entries(this.regions).forEach(([key, data]) => {
                     buttonsHTML += this.createRegionButton(key, data);
                 });
                 
                 // Add custom region button
+                buttonsHTML += `
+                    <div class="region-card" data-region="custom">
+                        <h3>📍 Custom Region</h3>
+                        <p>Select your own area<br>Draw a rectangle on the map<br>Choose any Alps region</p>
+                    </div>
+                `;
                 
                 return buttonsHTML;
                     }
