@@ -1,0 +1,13 @@
+{
+    "short_name": "AlPeaks",
+    "name": "AlPeaks - Know your Alps!",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "icons": [
+	{
+	    "src": "img/favicon.ico",
+	    "sizes": "192x192",
+	    "type": "image/png"
+	}
+    ]
+}
