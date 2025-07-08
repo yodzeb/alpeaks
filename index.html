@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alps Peak Guessing Game</title>
+    <title>Alpeaks - Know your Alps!</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <style>
         * {
@@ -399,6 +399,8 @@
                 this.userGuess = null;
                 this.guessMarker = null;
                 this.currentPeakMarker = null;
+                this.highScore = null;
+                this.STORAGE_KEY = 'AlpeaksData';
                 
                 this.regions = {
                     bauges: { 
@@ -480,12 +482,29 @@
                 this.init();
             }
 
-            init() {
-                this.renderRegionButtons();
-                this.setupEventListeners();
-                this.loadPeaksData();
+          init() {
+              this.loadHighScores();
+              this.renderRegionButtons();
+              this.setupEventListeners();
+              this.loadPeaksData();
 
             }
+      
+      loadHighScores() {
+          console.log("aa");
+
+          this.highScore = JSON.parse(localStorage.getItem(this.STORAGE_KEY)) || {};
+      }
+
+          updateHighScore() {
+              console.log("updating high score");
+
+              if (! this.highScore[this.currentRegion] || this.highScore[this.currentRegion] < this.score) {
+                  this.highScore[this.currentRegion] = this.score;
+                  localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.highScore));
+              }
+              
+          }
 
             renderRegionButtons() {
                 const regionGrid = document.getElementById('region-grid');
@@ -616,8 +635,8 @@
                 this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, 10);
                 
                 if (this.currentPeaks.length === 0) {
-                    // Fallback to all peaks if none in region
-                    this.currentPeaks = this.shuffleArray(this.peaksData).slice(0, 10);
+                    alert("No peaks found in this region...");
+                    location.reload();
                 }
             }
 
@@ -804,7 +823,8 @@
 
             }
 
-            endGame() {
+          endGame() {
+              this.updateHighScore();
                 document.getElementById('game-area').innerHTML = `
                     <div class="game-complete">
                         <h2>🎉 Game Complete!</h2>
@@ -813,6 +833,7 @@
                         <button class="btn" onclick="location.reload()">Play Again</button>
                     </div>
                 `;
+
             }
 
             quitGame() {
@@ -952,13 +973,19 @@
                     this.customMap = null;
                 }
                 }
-                createRegionButton(regionKey, regionData) {
-                return `
+          createRegionButton(regionKey, regionData) {
+              let outout=`
                     <div class="region-card" data-region="${regionKey}">
                         <h3>${regionData.icon} ${regionData.name}</h3>
-                        <p>${regionData.description}</p>
+                        <p>${regionData.description}</p>`;
+              if (this.highScore && this.highScore[regionKey])
+                  outout += `<p><i>${this.highScore[regionKey]} / 1000</i></p>`
+              else
+                  outout += `<p><i>0 / 1000</i></p>`
+              outout += `
                     </div>
                 `;
+              return outout;
             }
 
             generateRegionButtons() {
@@ -982,7 +1009,8 @@
         }
 
         // Initialize the game when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
+                    document.addEventListener('DOMContentLoaded', () => {
+                    
             new AlpsPeakGame();
         });
     </script>
