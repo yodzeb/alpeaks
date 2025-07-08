@@ -314,7 +314,7 @@
 <body>
     <div class="game-container">
         <div class="header" id="header">
-            <h1>🏔️ AlPeaks 🏔️</h1>
+            <h1>🏔️ Alpeaks 🏔️</h1>
             <p>Know your Alps!</p>
         </div>
 
@@ -507,11 +507,6 @@
                 document.getElementById('validate-guess').addEventListener('click', () => {
                     this.validateGuess();
                 });
-/*
-                document.getElementById('skip-question').addEventListener('click', () => {
-                    this.skipQuestion();
-                });
-*/
                 document.getElementById('quit-game').addEventListener('click', () => {
                     this.quitGame();
                 });
@@ -704,7 +699,7 @@
                 
                 const peak = this.currentPeaks[this.currentPeakIndex];
                 
-                document.getElementById('current-question').textContent = this.currentPeakIndex + 1;
+                document.getElementById('current-question').textContent = this.currentPeakIndex + 1 + "/" + this.currentPeaks.length;
                 document.getElementById('peak-name').textContent = peak.properties.name;
                 document.getElementById('peak-info').textContent = 
                     `Elevation: ${peak.properties.ele}m${peak.properties.prominence ? ` | Prominence: ${peak.properties.prominence}m` : ''}`;
@@ -725,9 +720,9 @@
                 document.getElementById('sb').style.display = 'flex';
             }
 
-            validateGuess() {
-                if (!this.userGuess) return;
-                
+          validateGuess() {
+              if (!this.userGuess) return;
+              document.getElementById('validate-guess').disabled = true;
                 const peak = this.currentPeaks[this.currentPeakIndex];
                 const [peakLng, peakLat] = peak.geometry.coordinates;
                 
@@ -775,32 +770,6 @@
                 }, 2000);
             }
 
-            skipQuestion() {
-                this.streak = 0;
-                this.updateScoreDisplay();
-                
-                const peak = this.currentPeaks[this.currentPeakIndex];
-                const [peakLng, peakLat] = peak.geometry.coordinates;
-                
-                this.currentPeakMarker = L.marker([peakLat, peakLng], {
-                    icon: L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
-                    })
-                }).addTo(this.map);
-                
-                this.showFeedback(false, 0, 0, true);
-                
-                setTimeout(() => {
-                    this.currentPeakIndex++;
-                    this.loadNextPeak();
-                }, 3000);
-            }
-
             showFeedback(isCorrect, distance, points, skipped = false) {
                 const feedback = document.getElementById('feedback');
 
@@ -829,17 +798,17 @@
                 return R * c;
             }
 
-            updateScoreDisplay() {
-                document.getElementById('score').textContent = this.score;
-                document.getElementById('streak').textContent = this.streak;
+          updateScoreDisplay() {
+              document.getElementById('score').textContent = this.score + " / " + ((this.currentPeakIndex+1)*100);
+              document.getElementById('streak').textContent = this.streak;
+
             }
 
             endGame() {
                 document.getElementById('game-area').innerHTML = `
                     <div class="game-complete">
                         <h2>🎉 Game Complete!</h2>
-                        <div class="final-score">${this.score}</div>
-                        <div class="final-score">${this.score}</div>
+                        <div class="final-score">${this.score} / 1000</div>
                         <p>Max streak : ${this.max_streak}</p>
                         <button class="btn" onclick="location.reload()">Play Again</button>
                     </div>
@@ -917,32 +886,6 @@
 
               });
 
-                                
-                
-              // this.customMap.on('mousedown', (e) => {
-              //       this.customSelectionStart = e.latlng;
-              //       this.customMap.dragging.disable();
-              //       this.ongoing = true;
-              //   });
-                
-              //   this.customMap.on('mousemove', (e) => {
-              //       if (this.customSelectionStart && this.ongoing) {
-              //           this.customSelectionEnd = e.latlng;
-              //           this.updateCustomRectangle();
-              //       }
-              //   });
-
-                
-              // this.customMap.on('mouseup', (e) => {
-              //       if (this.ongoing) {
-              //           this.ongoing = false;
-              //           this.customSelectionEnd = e.latlng;
-              //           this.updateCustomRectangle();
-              //           this.customMap.dragging.enable();
-              //           //this.customSelectionStart = null;
-              //           document.getElementById('submit-custom').disabled = false;
-              //       }
-              //   });
             }
 
           updateCustomRectangle() {
