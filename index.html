@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alps Peak Guessing Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            height: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            height: 20%;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .game-content {
+            padding: 10px;
+            height: 80%;
+        }
+
+        .region-selector {
+            text-align: center;
+            margin-bottom: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .region-selector h2 {
+            margin-bottom: 20px;
+
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .region-card {
+            background: white;
+            border: 3px solid #ecf0f1;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .region-card:hover {
+            transform: translateY(-5px);
+            border-color: #3498db;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+        }
+
+        .region-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        .region-card p {
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+
+        .custom-region-selector {
+            text-align: center;
+            margin-top: 30px;
+            height: 80%;
+        }
+
+        .custom-region-selector h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .custom-map-container {
+            height: 80%;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        #custom-map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .custom-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .game-area {
+            display: none;
+            height: 90%;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            //margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .current-peak {
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            //margin-bottom: 10px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .peak-name {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .peak-info {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .map-container {
+            position: relative;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .game-controls {
+            text-align: center;
+            //margin-top: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 15px 15px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .spinner {
+            border: 3px solid #ecf0f1;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .game-complete {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .score-board {
+                justify-content: center;
+            }
+            
+            .map-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header" id="header">
+            <h1>🏔️ AlPeaks 🏔️</h1>
+            <p>Test your knowledge of Alpine peaks!</p>
+        </div>
+
+        <div class="game-content">
+            <div id="region-selection" class="region-selector">
+                <h2>Choose Your Region</h2>
+                <div class="region-grid" id="region-grid">
+                    <!-- Buttons will be generated by JavaScript -->
+                </div>
+            </div>
+                <div id="custom-region-selector" class="custom-region-selector" style="display: none;">
+                    <h3>Select Custom Region</h3>
+                    <p>Click and drag on the map to select your region</p>
+                    <div class="custom-map-container">
+                        <div id="custom-map"></div>
+                    </div>
+                    <div class="custom-controls">
+                        <button class="btn" id="submit-custom" disabled>Submit Region</button>
+                        <button class="btn btn-danger" id="cancel-custom">Cancel</button>
+                    </div>
+                </div>
+
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading peaks data...</p>
+            </div>
+
+            <div id="game-area" class="game-area">
+                <div class="game-header">
+                    <div class="score-board">
+                        <div class="score-item">
+                            <div class="score-value" id="current-question">1</div>
+                            <div class="score-label">Question</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value" id="score">0</div>
+                            <div class="score-label">Score</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value" id="streak">0</div>
+                            <div class="score-label">Streak</div>
+                        </div>
+                    </div>
+                    <div class="current-peak">
+                      <div class="peak-name" id="peak-name">Peak Name</div>
+                      <div class="peak-info" id="peak-info">Elevation: 0m | Prominence: 0m</div>
+                    </div>
+                    <div class="game-controls">
+                        <button class="btn" id="validate-guess" disabled>Submit</button>
+                        <!-- <button class="btn" id="skip-question">Skip</button> -->
+                        <button class="btn btn-danger" id="quit-game">Quit</button>
+                    </div>
+                </div>
+
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+
+                <div id="feedback" class="feedback" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+
+                          
+
+      class AlpsPeakGame {
+            constructor() {
+                this.peaksData = [];
+                this.currentRegion = null;
+                this.currentPeaks = [];
+                this.currentPeakIndex = 0;
+                this.score = 0;
+                this.streak = 0;
+                this.map = null;
+                this.userGuess = null;
+                this.guessMarker = null;
+                this.currentPeakMarker = null;
+                
+                this.regions = {
+                    bauges: { 
+                        bounds: [[45.49, 5.92], [45.9, 6.3]], 
+                        name: "Bauges",
+                        icon: "🏔️",
+                        description: "Savoie & Haute-Savoie<br>Prealps between Annecy and Chambéry<br>Arcalod (2,217m)"
+                    },
+                    chartreuse: { 
+                        bounds: [[45.2, 5.6], [45.55, 6.0 ]], 
+                        name: "Chartreuse",
+                        icon: "🌲",
+                        description: "Isère & Savoie<br>Limestone peaks near Grenoble<br>Chamechaude (2,082m)"
+                    },
+                    belledonne: { 
+                        bounds: [[45.1, 5.9], [45.5, 6.2]], 
+                        name: "Belledonne",
+                        icon: "⛰️",
+                        description: "Isère & Savoie<br>Crystalline massif east of Grenoble<br>Grand Pic de Belledonne (2,977m)"
+                    },
+                    ecrins: { 
+                        bounds: [[44.55, 5.95], [45.2, 6.6]], 
+                        name: "Écrins",
+                        icon: "🏔️",
+                        description: "Hautes-Alpes & Isère<br>Highest peaks of Dauphiné Alps<br>Barre des Écrins (4,102m)"
+                    },
+                    vanoise: { 
+                        bounds: [[45.2, 6.6], [45.55, 7.2]], 
+                        name: "Vanoise",
+                        icon: "🦎",
+                        description: "Savoie<br>First French National Park<br>Grande Casse (3,855m)"
+                    },
+                    vercors: { 
+                        bounds: [[44.56, 5.0], [45.30, 5.68]], 
+                        name: "Vercors",
+                        icon: "🪨",
+                        description: "Isère & Drôme<br>Limestone plateau south of Grenoble<br>Grand Veymont (2,341m)"
+                    },
+                    aravis: { 
+                        bounds: [[45.8, 6.4], [46.0, 6.7]], 
+                        name: "Aravis",
+                        icon: "🎿",
+                        description: "Haute-Savoie<br>Between Annecy and Chamonix<br>Pointe Percée (2,750m)"
+                    },
+                    queyras: { 
+                        bounds: [[44.6, 6.6], [44.9, 7.1]], 
+                        name: "Queyras",
+                        icon: "🏛️",
+                        description: "Hautes-Alpes<br>Remote valleys near Italian border<br>Pic de Rochebrune (3,320m)"
+                    },
+                    mercantour: { 
+                        bounds: [[43.9, 7.0], [44.4, 7.6]], 
+                        name: "Mercantour",
+                        icon: "🌊",
+                        description: "Alpes-Maritimes<br>Maritime Alps near Nice<br>Gélas (3,143m)"
+                    },
+                    beaufortain: { 
+                        bounds: [[45.6, 6.5], [45.9, 6.8]], 
+                        name: "Beaufortain",
+                        icon: "🧀",
+                        description: "Savoie<br>Cheese country near Beaufort<br>Roignais (2,995m)"
+                    }
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.renderRegionButtons();
+                this.setupEventListeners();
+                this.loadPeaksData();
+
+            }
+
+            renderRegionButtons() {
+                const regionGrid = document.getElementById('region-grid');
+                regionGrid.innerHTML = this.generateRegionButtons();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.region-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const region = e.currentTarget.dataset.region;
+                        if (region === 'custom') {
+                            this.showCustomRegionSelector();
+                        } else {
+                            this.startGame(region);
+                        }
+                    });
+                });
+
+                document.getElementById('validate-guess').addEventListener('click', () => {
+                    this.validateGuess();
+                });
+/*
+                document.getElementById('skip-question').addEventListener('click', () => {
+                    this.skipQuestion();
+                });
+*/
+                document.getElementById('quit-game').addEventListener('click', () => {
+                    this.quitGame();
+                });
+
+                document.getElementById('submit-custom').addEventListener('click', () => {
+                    this.submitCustomRegion();
+                });
+
+                document.getElementById('cancel-custom').addEventListener('click', () => {
+                    this.cancelCustomRegion();
+                });
+            }
+
+            async loadPeaksData() {
+                try {
+                    // https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bnode%5B%22natural%22%3D%22peak%22%5D(44.0%2C5.0%2C48.0%2C15.0)%3Bout%3B
+                    // format slightly different
+                    const response = await fetch('data.json');
+                    if (!response.ok) {
+                        throw new Error('Could not load peaks data');
+                    }
+                    const data = await response.json();
+                    this.peaksData = data.features.filter(feature => 
+                        feature.properties.natural === 'peak' && 
+                        feature.properties.name && 
+                        feature.properties.ele
+                    );
+                    console.log(`Loaded ${this.peaksData.length} peaks`);
+                } catch (error) {
+                    console.error('Error loading peaks data:', error);
+                    // Fallback: create some sample data for demonstration
+                    this.peaksData = this.createSampleData();
+                }
+            }
+
+            createSampleData() {
+                return [
+                    {
+                        properties: {
+                            name: "Mont Blanc",
+                            ele: "4809",
+                            prominence: "4696"
+                        },
+                        geometry: {
+                            coordinates: [6.8651, 45.8326]
+                        }
+                    },
+                    {
+                        properties: {
+                            name: "Matterhorn",
+                            ele: "4478",
+                            prominence: "1042"
+                        },
+                        geometry: {
+                            coordinates: [7.6583, 45.9763]
+                        }
+                    },
+                    {
+                        properties: {
+                            name: "Eiger",
+                            ele: "3967",
+                            prominence: "362"
+                        },
+                        geometry: {
+                            coordinates: [8.0056, 46.5775]
+                        }
+                    }
+                ];
+            }
+
+            startGame(region) {
+                this.currentRegion = region;
+                this.score = 0;
+                this.streak = 0;
+                this.currentPeakIndex = 0;
+                
+                document.getElementById('region-selection').style.display = 'none';
+                document.getElementById('custom-region-selector').style.display = 'none';
+                document.getElementById('loading').style.display = 'block';
+                
+                setTimeout(() => {
+                    this.selectPeaksForRegion(region);
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('header').style.display = 'none';
+                    document.getElementById('game-area').style.display = 'block';        
+                    
+                    // Initialize map after game area is visible
+                    setTimeout(() => {
+                        this.initMap();
+                        this.loadNextPeak();
+                    }, 100);
+                }, 1000);
+            }
+
+            selectPeaksForRegion(region) {
+                const bounds = this.regions[region].bounds;
+                const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+                
+                const regionPeaks = this.peaksData.filter(peak => {
+                    const [lng, lat] = peak.geometry.coordinates;
+                    return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+                });
+                
+                // Select 10 random peaks
+                this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, 10);
+                
+                if (this.currentPeaks.length === 0) {
+                    // Fallback to all peaks if none in region
+                    this.currentPeaks = this.shuffleArray(this.peaksData).slice(0, 10);
+                }
+            }
+
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            initMap() {
+                const bounds = this.regions[this.currentRegion].bounds;
+                
+                this.map = L.map('map', {
+                    zoomControl: false,         // Remove zoom buttons
+                    scrollWheelZoom: false,     // Disable scroll wheel
+                    doubleClickZoom: false,     // Disable double-click zoom
+                    touchZoom: false,           // Disable pinch zoom on mobile
+                    dragging: true              // You can still allow dragging if desired
+                }).fitBounds(bounds);
+                
+                L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap',
+                }).addTo(this.map);
+                /*
+                  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+                  attribution: '&copy; OpenStreetMap contributors & CartoDB',
+                  }).addTo(this.map);
+                */
+                /*
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(this.map);
+                */
+      
+                this.map.on('click', (e) => {
+                    this.handleMapClick(e);
+                });
+
+                var polygon = L.polygon([
+                    this.regions[this.currentRegion].bounds[0],
+                    [this.regions[this.currentRegion].bounds[0][0], this.regions[this.currentRegion].bounds[1][1]],
+                    this.regions[this.currentRegion].bounds[1],
+                    [this.regions[this.currentRegion].bounds[1][0], this.regions[this.currentRegion].bounds[0][1]],
+
+                ]).addTo(this.map);
+
+            }
+
+            handleMapClick(e) {
+                const { lat, lng } = e.latlng;
+                this.userGuess = { lat, lng };
+                
+                if (this.guessMarker) {
+                    this.map.removeLayer(this.guessMarker);
+                }
+                
+                this.guessMarker = L.marker([lat, lng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(this.map);
+                
+                document.getElementById('validate-guess').disabled = false;
+            }
+
+            loadNextPeak() {
+                if (this.currentPeakIndex >= this.currentPeaks.length) {
+                    this.endGame();
+                    return;
+                }
+                
+                const peak = this.currentPeaks[this.currentPeakIndex];
+                
+                document.getElementById('current-question').textContent = this.currentPeakIndex + 1;
+                document.getElementById('peak-name').textContent = peak.properties.name;
+                document.getElementById('peak-info').textContent = 
+                    `Elevation: ${peak.properties.ele}m${peak.properties.prominence ? ` | Prominence: ${peak.properties.prominence}m` : ''}`;
+                
+                // Clear previous markers and feedback
+                if (this.guessMarker) {
+                    this.map.removeLayer(this.guessMarker);
+                    this.guessMarker = null;
+                }
+                if (this.currentPeakMarker) {
+                    this.map.removeLayer(this.currentPeakMarker);
+                    this.currentPeakMarker = null;
+                }
+                
+                this.userGuess = null;
+                document.getElementById('validate-guess').disabled = true;
+                document.getElementById('feedback').style.display = 'none';
+            }
+
+            validateGuess() {
+                if (!this.userGuess) return;
+                
+                const peak = this.currentPeaks[this.currentPeakIndex];
+                const [peakLng, peakLat] = peak.geometry.coordinates;
+                
+                // Calculate distance between guess and actual peak
+                const distance = this.calculateDistance(
+                    this.userGuess.lat, this.userGuess.lng,
+                    peakLat, peakLng
+                );
+                
+                // Show the actual peak location
+                this.currentPeakMarker = L.marker([peakLat, peakLng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(this.map);
+                
+                // Score based on distance (closer = higher score)
+                let points = 0;
+                let isCorrect = false;
+
+                points = Math.max(0, Math.round(100-distance));
+                isCorrect = points > 90;
+                
+                this.score += points;
+                
+                if (isCorrect) {
+                    this.streak++;
+                } else {
+                    this.streak = 0;
+                }
+                
+                this.updateScoreDisplay();
+                this.showFeedback(isCorrect, distance, points);
+                
+                setTimeout(() => {
+                    this.currentPeakIndex++;
+                    this.loadNextPeak();
+                }, 3000);
+            }
+
+            skipQuestion() {
+                this.streak = 0;
+                this.updateScoreDisplay();
+                
+                const peak = this.currentPeaks[this.currentPeakIndex];
+                const [peakLng, peakLat] = peak.geometry.coordinates;
+                
+                this.currentPeakMarker = L.marker([peakLat, peakLng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(this.map);
+                
+                this.showFeedback(false, 0, 0, true);
+                
+                setTimeout(() => {
+                    this.currentPeakIndex++;
+                    this.loadNextPeak();
+                }, 3000);
+            }
+
+            showFeedback(isCorrect, distance, points, skipped = false) {
+                const feedback = document.getElementById('feedback');
+                
+                if (skipped) {
+                    feedback.textContent = 'Question skipped! The peak location is shown in green.';
+                    feedback.className = 'feedback incorrect';
+                } else if (isCorrect) {
+                    feedback.textContent = `Excellent! You were ${distance.toFixed(1)}km away and earned ${points} points!`;
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.textContent = `Not quite right. You were ${distance.toFixed(1)}km away and earned ${points} points.`;
+                    feedback.className = 'feedback incorrect';
+                }
+                
+                feedback.style.display = 'block';
+            }
+
+            calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Earth's radius in kilometers
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                         Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+
+            updateScoreDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('streak').textContent = this.streak;
+            }
+
+            endGame() {
+                document.getElementById('game-area').innerHTML = `
+                    <div class="game-complete">
+                        <h2>🎉 Game Complete!</h2>
+                        <div class="final-score">${this.score}</div>
+                        <p>Final Score</p>
+                        <p>You completed all 10 peaks in the ${this.regions[this.currentRegion].name} massif!</p>
+                        <button class="btn" onclick="location.reload()">Play Again</button>
+                    </div>
+                `;
+            }
+
+            quitGame() {
+                if (confirm('Are you sure you want to quit the current game?')) {
+                    location.reload();
+                }
+            }
+
+          showCustomRegionSelector() {
+                document.getElementById('region-selection').style.display = 'none';
+                document.getElementById('custom-region-selector').style.display = 'block';
+                
+                // Initialize custom region map
+                this.customMap = L.map('custom-map').setView([45.5, 6.5], 7);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(this.customMap);
+                
+                // Add rectangle selection
+                this.customRectangle = null;
+                this.customSelectionStart = null;
+              this.customSelectionEnd = null;
+              this.ongoing = false;
+              this.mousedown = false;
+              this.dragging = false;
+
+              this.customMap.on('mousedown', (e) => {
+                  this.mousedown = true;
+                  console.log ("got click");
+                  this.dragging = false;
+              });
+
+              this.customMap.on('mousemove', (e) => {
+                  console.log("move");
+                  
+                  if (this.mousedown) {
+                      this.dragging = true;
+                  }
+                  
+              });
+
+              this.customMap.on('mouseup', (e) => {
+                  this.mousedown = false;
+                  if (!this.dragging) {
+                      if (this.customSelectionEnd && this.customSelectionStart) {
+                          // reset
+                          this.customSelectionStart = null;
+                          this.updateCustomRectangle();
+                          document.getElementById('submit-custom').disabled = true;
+                          this.customSelectionEnd = null;
+                      }
+                      else if (!this.customSelectionStart && !this.customSelectionEnd) {
+                          // restart
+                          this.customSelectionStart = e.latlng;
+                          this.customSelectionEnd = null;
+                          this.updateCustomRectangle();
+                          document.getElementById('submit-custom').disabled = true;
+                          console.log ("new start");
+                      }
+                      else if (this.customSelectionStart && ! this.customSelectionEnd) {
+                          this.customSelectionEnd = e.latlng;
+                          this.updateCustomRectangle();
+                          document.getElementById('submit-custom').disabled = false;
+                          console.log ("start:");
+                          console.log (this.customSelectionStart)
+                          console.log ("end:");
+                          console.log (this.customSelectionEnd)
+                      }
+                  }
+
+              });
+
+                                
+                
+              // this.customMap.on('mousedown', (e) => {
+              //       this.customSelectionStart = e.latlng;
+              //       this.customMap.dragging.disable();
+              //       this.ongoing = true;
+              //   });
+                
+              //   this.customMap.on('mousemove', (e) => {
+              //       if (this.customSelectionStart && this.ongoing) {
+              //           this.customSelectionEnd = e.latlng;
+              //           this.updateCustomRectangle();
+              //       }
+              //   });
+
+                
+              // this.customMap.on('mouseup', (e) => {
+              //       if (this.ongoing) {
+              //           this.ongoing = false;
+              //           this.customSelectionEnd = e.latlng;
+              //           this.updateCustomRectangle();
+              //           this.customMap.dragging.enable();
+              //           //this.customSelectionStart = null;
+              //           document.getElementById('submit-custom').disabled = false;
+              //       }
+              //   });
+            }
+
+            updateCustomRectangle() {
+                if (this.customRectangle) {
+                    this.customMap.removeLayer(this.customRectangle);
+                }
+                
+                if (this.customSelectionStart && this.customSelectionEnd) {
+                    const bounds = L.latLngBounds(this.customSelectionStart, this.customSelectionEnd);
+                    this.customRectangle = L.rectangle(bounds, {
+                        color: '#3498db',
+                        weight: 2,
+                        fillOpacity: 0.2
+                    }).addTo(this.customMap);
+                }
+            }
+
+          submitCustomRegion() {
+              if (this.customSelectionStart && this.customSelectionEnd) {
+                  const bounds = L.latLngBounds(this.customSelectionStart, this.customSelectionEnd);
+                    const customRegion = {
+                        bounds: [[bounds.getSouth(), bounds.getWest()], [bounds.getNorth(), bounds.getEast()]],
+                        name: "Custom Region",
+                        icon: "📍",
+                        description: "Your selected area"
+                    };
+                  console.log(customRegion);
+                    this.regions.custom = customRegion;
+                    this.startGame('custom');
+                }
+            }
+
+            cancelCustomRegion() {
+                document.getElementById('custom-region-selector').style.display = 'none';
+                document.getElementById('region-selection').style.display = 'block';
+                
+                if (this.customMap) {
+                    this.customMap.remove();
+                    this.customMap = null;
+                }
+                }
+                createRegionButton(regionKey, regionData) {
+                return `
+                    <div class="region-card" data-region="${regionKey}">
+                        <h3>${regionData.icon} ${regionData.name}</h3>
+                        <p>${regionData.description}</p>
+                    </div>
+                `;
+            }
+
+            generateRegionButtons() {
+                let buttonsHTML = '';
+                buttonsHTML += `
+                    <div class="region-card" data-region="custom">
+                        <h3>📍 Custom Region</h3>
+                        <p>Select your own area<br>Draw a rectangle on the map<br>Choose any Alps region</p>
+                    </div>
+                `;
+
+                Object.entries(this.regions).forEach(([key, data]) => {
+                    buttonsHTML += this.createRegionButton(key, data);
+                });
+                
+                // Add custom region button
+                
+                return buttonsHTML;
+                    }
+
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AlpsPeakGame();
+        });
+    </script>
+</body>
+</html>
