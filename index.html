@@ -393,7 +393,7 @@
                           
 
       class AlpsPeakGame {
-            constructor(q) {
+          constructor(q, debug) {
                 this.peaksData = [];
                 this.currentRegion = null;
                 this.currentPeaks = [];
@@ -407,7 +407,9 @@
                 this.currentPeakMarker = null;
                 this.highScore = null;
                 this.STORAGE_KEY = 'AlpeaksData';
-                this.questions = q;
+              this.questions = q;
+              this.debug = debug;
+              this.debug_markers = [];
                 
                 this.regions = {
                     bauges: { 
@@ -504,13 +506,13 @@
       }
 
           updateHighScore() {
-              console.log("updating high score");
-
+          
               if (! this.highScore[this.currentRegion] || this.highScore[this.currentRegion] < this.score) {
                   this.highScore[this.currentRegion] = this.score;
                   localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.highScore));
+                  return true;
               }
-              
+              return false;
           }
 
             renderRegionButtons() {
@@ -549,6 +551,7 @@
             async loadPeaksData() {
                 try {
                     // https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bnode%5B%22natural%22%3D%22peak%22%5D(44.0%2C5.0%2C48.0%2C15.0)%3Bout%3B
+                    // https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bnode%5B%22natural%22%3D%22peak%22%5D(47.6%2C6.3.0%2C48.8%2C7.5)%3Bout%3B
                     // format slightly different
                     const response = await fetch('data.json');
                     if (!response.ok) {
@@ -603,6 +606,29 @@
                 ];
             }
 
+          displayAllPeaks() {
+              // first clean all
+              this.debug_markers.forEach(m => {
+                  this.map.removeLayer(m);
+              });
+              this.debug_markers = []
+              // display all
+              this.allRegionPeaks.forEach( peak =>  {
+                  const [lng, lat] = peak.geometry.coordinates;
+                  let m = L.marker([lat, lng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                  }).addTo(this.map);
+                  this.debug_markers.push(m);
+              });
+          }
+          
           startGame(region) {
               console.log("starting new gaem");
                 this.currentRegion = region;
@@ -615,7 +641,8 @@
                 document.getElementById('custom-region-selector').style.display = 'none';
                 document.getElementById('loading').style.display = 'block';
                 document.getElementById('endgame').display = "none";
-                
+
+              
                 setTimeout(() => {
                     this.selectPeaksForRegion(region);
                     
@@ -628,6 +655,10 @@
                         if (!this.map)
                                this.initMap();
                         this.loadNextPeak();
+                        if (this.debug) {
+                            this.displayAllPeaks();
+                        }
+
                     }, 100);
                 }, 1000);
             }
@@ -642,6 +673,7 @@
                 });
                 
                 // Select 10 random peaks
+                this.allRegionPeaks =  this.shuffleArray(regionPeaks);
                 this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, this.questions);
                 
                 if (this.currentPeaks.length === 0) {
@@ -830,17 +862,25 @@
           updateScoreDisplay() {
               document.getElementById('score').textContent = this.score + " / " + ((this.currentPeakIndex+1)*100);
               document.getElementById('streak').textContent = this.streak;
-
-            }
+              
+          }
+              // if (new_high) {
+              //     document.getElementById("endgame").innerHTML += "";
+              // }
+//              document.getElementById("endgame").innerHTML += `
 
           endGame() {
-              let new_high = this.updateHighScore();
-              console.log("endgame");
+              let record_msg = "";
+              if (this.updateHighScore() ){
+                  record_msg = '<div class="final-score">🎉 New record! 🎉 </div>';
+              }
+              
               document.getElementById('game-area').style.display = "none";
-                document.getElementById('endgame').innerHTML = `
+              document.getElementById('endgame').innerHTML = `
                     <div class="game-complete">
-                        <h2>🎉 Game Complete!</h2>
+                        <h2>Game Complete!</h2>
                         <div class="final-score">${this.score} / ${this.currentPeaks.length * 100}</div>
+                        ${record_msg}
                         <p>Max streak : ${this.max_streak}</p>
                         <button class="btn" onclick="location.reload()">Main menu</button>
                         <button class="btn" id="replay" >Play Again this region</button>
@@ -849,7 +889,6 @@
               document.getElementById('endgame').style.display = "block";
               document.getElementById("replay").addEventListener('click', () => {
                   document.getElementById("endgame").style.display = "none";
-                  console.log("click");
                   this.startGame(this.currentRegion);
               });
 
@@ -1030,18 +1069,14 @@
                     function get_param(p) {
                         let url = window.location.href;
                         var arr = url.split('?');
-                        console.log(arr);
                         let val = false;
                         if (arr.length > 1 ) {
                             arr[1].split('&').forEach(a => {
                                 args = a.split('=');
-                                console.log(args);
                                 if (args.length > 1 && args[0] == p) {
-                                    console.log("Found "+args[1]);
                                     val = args[1];
                                 }
                             } );
-
                         }
                         return val;
                     }
@@ -1049,7 +1084,8 @@
   // Initialize the game when the page loads
   document.addEventListener('DOMContentLoaded', () => {
       let default_q = get_param('q') || 10;
-      new AlpsPeakGame(default_q);
+      let debug_f = get_param('d');
+      new AlpsPeakGame(default_q, debug_f);
   });
     </script>
 </body>
