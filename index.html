@@ -504,13 +504,13 @@
       }
 
           updateHighScore() {
-              console.log("updating high score");
-
+          
               if (! this.highScore[this.currentRegion] || this.highScore[this.currentRegion] < this.score) {
                   this.highScore[this.currentRegion] = this.score;
                   localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.highScore));
+                  return true;
               }
-              
+              return false;
           }
 
             renderRegionButtons() {
@@ -830,17 +830,25 @@
           updateScoreDisplay() {
               document.getElementById('score').textContent = this.score + " / " + ((this.currentPeakIndex+1)*100);
               document.getElementById('streak').textContent = this.streak;
-
-            }
+              
+          }
+              // if (new_high) {
+              //     document.getElementById("endgame").innerHTML += "";
+              // }
+//              document.getElementById("endgame").innerHTML += `
 
           endGame() {
-              let new_high = this.updateHighScore();
-              console.log("endgame");
+              let record_msg = "";
+              if (this.updateHighScore() ){
+                  record_msg = '<div class="final-score">🎉 New record! 🎉 </div>';
+              }
+              
               document.getElementById('game-area').style.display = "none";
-                document.getElementById('endgame').innerHTML = `
+              document.getElementById('endgame').innerHTML = `
                     <div class="game-complete">
-                        <h2>🎉 Game Complete!</h2>
+                        <h2>Game Complete!</h2>
                         <div class="final-score">${this.score} / ${this.currentPeaks.length * 100}</div>
+                        ${record_msg}
                         <p>Max streak : ${this.max_streak}</p>
                         <button class="btn" onclick="location.reload()">Main menu</button>
                         <button class="btn" id="replay" >Play Again this region</button>
@@ -849,7 +857,6 @@
               document.getElementById('endgame').style.display = "block";
               document.getElementById("replay").addEventListener('click', () => {
                   document.getElementById("endgame").style.display = "none";
-                  console.log("click");
                   this.startGame(this.currentRegion);
               });
 
