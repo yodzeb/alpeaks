@@ -639,7 +639,7 @@
                 });
                 
                 // Select 10 random peaks
-                this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, 1);
+                this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, 10);
                 
                 if (this.currentPeaks.length === 0) {
                     alert("No peaks found in this region...");
@@ -836,7 +836,7 @@
                 document.getElementById('endgame').innerHTML = `
                     <div class="game-complete">
                         <h2>🎉 Game Complete!</h2>
-                        <div class="final-score">${this.score} / 1000</div>
+                        <div class="final-score">${this.score} / ${this.currentPeaks.length * 100}</div>
                         <p>Max streak : ${this.max_streak}</p>
                         <button class="btn" id="replay">Play Again</button>
                     </div>
