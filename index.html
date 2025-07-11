@@ -74,6 +74,10 @@
             margin-bottom: 30px;
         }
 
+        .endgame {
+            display: none;   
+        }
+        
         .region-card {
             background: white;
             border: 3px solid #ecf0f1;
@@ -343,6 +347,8 @@
                 <p>Loading peaks data...</p>
             </div>
 
+            <div id="endgame"></div>
+            
             <div id="game-area" class="game-area">
                 <div class="game-header">
                     <div class="current-peak">
@@ -606,6 +612,7 @@
                 document.getElementById('region-selection').style.display = 'none';
                 document.getElementById('custom-region-selector').style.display = 'none';
                 document.getElementById('loading').style.display = 'block';
+                document.getElementById('endgame').display = "none";
                 
                 setTimeout(() => {
                     this.selectPeaksForRegion(region);
@@ -825,14 +832,19 @@
 
           endGame() {
               this.updateHighScore();
-                document.getElementById('game-area').innerHTML = `
+              document.getElementById('game-area').display = "none";
+                document.getElementById('endgame').innerHTML = `
                     <div class="game-complete">
                         <h2>🎉 Game Complete!</h2>
-                        <div class="final-score">${this.score} / 1000</div>
+                        <div class="final-score">${this.score} / ${this.currentPeaks.length * 100}</div>
                         <p>Max streak : ${this.max_streak}</p>
-                        <button class="btn" onclick="location.reload()">Play Again</button>
+                        <button class="btn" id="replay">Play Again</button>
                     </div>
                 `;
+              document.getElementById('endgame').display = "block";
+              document.getElementById("replay").addEventListener('click', () => {
+                  this.startGame(this.currentRegion);
+              });
 
             }
 
