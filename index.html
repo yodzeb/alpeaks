@@ -393,7 +393,7 @@
                           
 
       class AlpsPeakGame {
-            constructor() {
+            constructor(q) {
                 this.peaksData = [];
                 this.currentRegion = null;
                 this.currentPeaks = [];
@@ -407,6 +407,7 @@
                 this.currentPeakMarker = null;
                 this.highScore = null;
                 this.STORAGE_KEY = 'AlpeaksData';
+                this.questions = q;
                 
                 this.regions = {
                     bauges: { 
@@ -602,13 +603,14 @@
                 ];
             }
 
-            startGame(region) {
+          startGame(region) {
+              console.log("starting new gaem");
                 this.currentRegion = region;
                 this.score = 0;
                 this.streak = 0;
                 this.max_streak = 0;
                 this.currentPeakIndex = 0;
-                
+              this.updateScoreDisplay();
                 document.getElementById('region-selection').style.display = 'none';
                 document.getElementById('custom-region-selector').style.display = 'none';
                 document.getElementById('loading').style.display = 'block';
@@ -623,7 +625,8 @@
                     
                     // Initialize map after game area is visible
                     setTimeout(() => {
-                        this.initMap();
+                        if (!this.map)
+                               this.initMap();
                         this.loadNextPeak();
                     }, 100);
                 }, 1000);
@@ -639,7 +642,7 @@
                 });
                 
                 // Select 10 random peaks
-                this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, 10);
+                this.currentPeaks = this.shuffleArray(regionPeaks).slice(0, this.questions);
                 
                 if (this.currentPeaks.length === 0) {
                     alert("No peaks found in this region...");
@@ -831,18 +834,22 @@
             }
 
           endGame() {
-              this.updateHighScore();
-              document.getElementById('game-area').display = "none";
+              let new_high = this.updateHighScore();
+              console.log("endgame");
+              document.getElementById('game-area').style.display = "none";
                 document.getElementById('endgame').innerHTML = `
                     <div class="game-complete">
                         <h2>🎉 Game Complete!</h2>
                         <div class="final-score">${this.score} / ${this.currentPeaks.length * 100}</div>
                         <p>Max streak : ${this.max_streak}</p>
-                        <button class="btn" id="replay">Play Again</button>
+                        <button class="btn" onclick="location.reload()">Main menu</button>
+                        <button class="btn" id="replay" >Play Again this region</button>
                     </div>
                 `;
-              document.getElementById('endgame').display = "block";
+              document.getElementById('endgame').style.display = "block";
               document.getElementById("replay").addEventListener('click', () => {
+                  document.getElementById("endgame").style.display = "none";
+                  console.log("click");
                   this.startGame(this.currentRegion);
               });
 
@@ -1020,11 +1027,30 @@
 
         }
 
-        // Initialize the game when the page loads
-                    document.addEventListener('DOMContentLoaded', () => {
+                    function get_param(p) {
+                        let url = window.location.href;
+                        var arr = url.split('?');
+                        console.log(arr);
+                        let val = false;
+                        if (arr.length > 1 ) {
+                            arr[1].split('&').forEach(a => {
+                                args = a.split('=');
+                                console.log(args);
+                                if (args.length > 1 && args[0] == p) {
+                                    console.log("Found "+args[1]);
+                                    val = args[1];
+                                }
+                            } );
+
+                        }
+                        return val;
+                    }
                     
-            new AlpsPeakGame();
-        });
+  // Initialize the game when the page loads
+  document.addEventListener('DOMContentLoaded', () => {
+      let default_q = get_param('q') || 10;
+      new AlpsPeakGame(default_q);
+  });
     </script>
 </body>
 </html>
