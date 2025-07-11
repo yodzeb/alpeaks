@@ -477,7 +477,7 @@
                         bounds: [[45.744, 6.74],[46.028649018002895, 7.079315185546875]],
                         name: "Mont Blanc",
                         icon: "❄️",
-                        description: "Highest peaks country!<br>Mont Blanc(4,808m)"
+                        description: "Highest peaks' country!<br>Mont Blanc (4,808m)"
                     },
                     vosges: {
                         bounds: [[47.73,6.5],[48.74,7.43]],
@@ -914,8 +914,8 @@
                 // Initialize custom region map
                 this.customMap = L.map('custom-map').setView([45.5, 6.5], 7);
                 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
+                L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap',
                 }).addTo(this.customMap);
                 
                 // Add rectangle selection
