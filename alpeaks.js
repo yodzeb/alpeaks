@@ -16,91 +16,13 @@ class AlpsPeakGame {
         this.questions = q;
         this.debug = debug;
         this.debug_markers = [];
-        
-        this.regions = {
-            bauges: { 
-                bounds: [[45.49, 5.92], [45.9, 6.3]], 
-                name: "Bauges",
-                icon: "🏔️",
-                description: "Savoie & Haute-Savoie<br>Prealps between Annecy and Chambéry<br>Arcalod (2,217m)"
-            },
-            chartreuse: { 
-                bounds: [[45.2, 5.6], [45.55, 6.0 ]], 
-                name: "Chartreuse",
-                icon: "🌲",
-                description: "Isère & Savoie<br>Limestone peaks near Grenoble<br>Chamechaude (2,082m)"
-            },
-            belledonne: { 
-                bounds: [[45.1, 5.9], [45.54, 6.3]], 
-                name: "Belledonne",
-                icon: "⛰️",
-                description: "Isère & Savoie<br>Crystalline massif east of Grenoble<br>Grand Pic de Belledonne (2,977m)"
-            },
-            ecrins: { 
-                bounds: [[44.55, 5.95], [45.2, 6.6]], 
-                name: "Écrins",
-                icon: "🏔️",
-                description: "Hautes-Alpes & Isère<br>Highest peaks of Dauphiné Alps<br>Barre des Écrins (4,102m)"
-            },
-            vanoise: { 
-                bounds: [[45.2, 6.4], [45.55, 7.15]], 
-                name: "Vanoise",
-                icon: "🦎",
-                description: "Savoie<br>First French National Park<br>Grande Casse (3,855m)"
-            },
-            vercors: { 
-                bounds: [[44.56, 5.0], [45.30, 5.68]], 
-                name: "Vercors",
-                icon: "🪨",
-                description: "Isère & Drôme<br>Limestone plateau south of Grenoble<br>Grand Veymont (2,341m)"
-            },
-            aravis: { 
-                bounds: [[45.76, 6.35], [46.05, 6.61]], 
-                name: "Aravis",
-                icon: "🎿",
-                description: "Haute-Savoie<br>Between Annecy and Chamonix<br>Pointe Percée (2,750m)"
-            },
-            queyras: { 
-                bounds: [[44.6, 6.6], [44.9, 7.1]], 
-                name: "Queyras",
-                icon: "🏛️",
-                description: "Hautes-Alpes<br>Remote valleys near Italian border<br>Pic de Rochebrune (3,320m)"
-            },
-            mercantour: { 
-                bounds: [[43.9, 7.0], [44.4, 7.6]], 
-                name: "Mercantour",
-                icon: "🌊",
-                description: "Alpes-Maritimes<br>Maritime Alps near Nice<br>Gélas (3,143m)"
-            },
-            beaufortain: { 
-                bounds: [[45.6, 6.5], [45.9, 6.8]], 
-                name: "Beaufortain",
-                icon: "🧀",
-                description: "Savoie<br>Cheese country near Beaufort<br>Roignais (2,995m)"
-            },
-            montblanc: {
-                bounds: [[45.744, 6.74],[46.028649018002895, 7.079315185546875]],
-                name: "Mont Blanc",
-                icon: "❄️",
-                description: "Highest peaks' country!<br>Mont Blanc (4,808m)"
-            },
-            vosges: {
-                bounds: [[47.73,6.5],[48.74,7.43]],
-                name: "Vosges",
-                icon: "🐄",
-                description: "Vosges<br>It's not flatland !<br>Grand Ballon (1,423m)"
-            },
-            /*
-              auvergne: {
-              bounds: [[44.83,2.36],[46.03,3.38]],
-              name: "Auvergne",
-              icon: "🌋",
-              description: "Auvergne<br>Hot region!<br>Puy de Sancy (1,886m)"
-              }
-            */
-        };
-        
-        this.init();
+
+        fetch("data/regions.json")
+            .then(response => response.json())
+            .then(json => {
+                this.regions = json;
+                this.init();
+            });
     }
 
     init() {
@@ -165,7 +87,7 @@ class AlpsPeakGame {
             // https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bnode%5B%22natural%22%3D%22peak%22%5D(44.0%2C5.0%2C48.0%2C15.0)%3Bout%3B
             // https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bnode%5B%22natural%22%3D%22peak%22%5D(47.6%2C6.3.0%2C48.8%2C7.5)%3Bout%3B
             // format slightly different
-            const response = await fetch('data.json');
+            const response = await fetch('data/data.json');
             if (!response.ok) {
                 throw new Error('Could not load peaks data');
             }
