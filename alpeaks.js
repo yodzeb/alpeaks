@@ -30,17 +30,22 @@ class AlpsPeakGame {
         this.renderRegionButtons();
         this.setupEventListeners();
         this.loadPeaksData();
+    }
 
+    loadHighScores() {
+        this.highScore = JSON.parse(localStorage.getItem(this.STORAGE_KEY)) || {};
+        let sum = 0;
+        console.log(this.highScore);
+        Object.keys(this.highScore).forEach(e => { if (e != 'custom') sum += this.highScore[e]; });
+        console.log(sum);
+        console.log(((Object.keys(this.regions).length - 1)*1000));
+        let percent = parseInt((sum/((Object.keys(this.regions).length - 1)*1000))*100);
+        parseInt((sum/((Object.keys(this.regions).length - 1)*1000))*100);
+        document.getElementById("overall-progress").value = percent;
+        document.getElementById("overall-progress").setAttribute("data-label",  percent + "% completed");
     }
     
-    loadHighScores() {
-        console.log("aa");
-
-        this.highScore = JSON.parse(localStorage.getItem(this.STORAGE_KEY)) || {};
-    }
-
     updateHighScore() {
-        
         if (! this.highScore[this.currentRegion] || this.highScore[this.currentRegion] < this.score) {
             this.highScore[this.currentRegion] = this.score;
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.highScore));
@@ -164,7 +169,6 @@ class AlpsPeakGame {
     }
     
     startGame(region) {
-        console.log("starting new gaem");
         this.currentRegion = region;
         this.score = 0;
         this.streak = 0;
@@ -175,7 +179,6 @@ class AlpsPeakGame {
         document.getElementById('custom-region-selector').style.display = 'none';
         document.getElementById('loading').style.display = 'block';
         document.getElementById('endgame').display = "none";
-
         
         setTimeout(() => {
             this.selectPeaksForRegion(region);
@@ -235,10 +238,11 @@ class AlpsPeakGame {
             touchZoom: false,           // Disable pinch zoom on mobile
             dragging: true              // You can still allow dragging if desired
         }).fitBounds(bounds);
-        
+
         L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap',
-        }).addTo(this.map);
+            }).addTo(this.map);
+
         /*
           L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
           attribution: '&copy; OpenStreetMap contributors & CartoDB',
@@ -271,6 +275,16 @@ class AlpsPeakGame {
         if (this.guessMarker) {
             this.map.removeLayer(this.guessMarker);
         }
+        /*
+        this.guessMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'guess-marker',
+                html: '<div style="font-size: 24px; color: red;">❓</div>',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41]
+            })
+            }).addTo(this.map);
+            */
         
         this.guessMarker = L.marker([lat, lng], {
             icon: L.icon({
@@ -282,6 +296,7 @@ class AlpsPeakGame {
                 shadowSize: [41, 41]
             })
         }).addTo(this.map);
+        
         
         document.getElementById('validate-guess').disabled = false;
     }
