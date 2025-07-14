@@ -446,6 +446,7 @@ class AlpsPeakGame {
     }
 
     showCustomRegionSelector() {
+        document.getElementById('header').style.display = 'none';
         document.getElementById('region-selection').style.display = 'none';
         document.getElementById('custom-region-selector').style.display = 'block';
         
