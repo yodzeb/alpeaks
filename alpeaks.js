@@ -627,10 +627,21 @@ function get_param(p) {
     return val;
 }
 
+
+function updateViewportHeight() {
+    document.getElementById("body").style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+}
+
+
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     let default_q = get_param('q') || 10;
     let debug_f = get_param('d');
     new AlpsPeakGame(default_q, debug_f);
-    window.scrollTo(0, 0);
+
+    window.addEventListener('resize', updateViewportHeight);
+    window.addEventListener('load', updateViewportHeight);
+    updateViewportHeight();
+    //window.scrollTo(0, 0);
 });
+
