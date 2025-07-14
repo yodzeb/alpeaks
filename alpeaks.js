@@ -632,4 +632,5 @@ document.addEventListener('DOMContentLoaded', () => {
     let default_q = get_param('q') || 10;
     let debug_f = get_param('d');
     new AlpsPeakGame(default_q, debug_f);
+    window.scrollTo(0, 0);
 });
