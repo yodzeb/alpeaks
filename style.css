@@ -316,7 +316,7 @@ progress::after {
   text-align: center;
   font-weight: bold;
   color: black;
-  line-height: 20px;
+  //line-height: 20px;
   pointer-events: none;
 }
 
